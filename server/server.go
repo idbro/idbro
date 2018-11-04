@@ -13,6 +13,11 @@ import (
 	"gopkg.in/urfave/cli.v1"
 )
 
+const (
+	// timeout for grace shutdown
+	graceTimeout = 30 * time.Second
+)
+
 // Start the idbro server.
 func Start(c *cli.Context, port uint16) error {
 	e := echo.New()
@@ -33,14 +38,13 @@ func Start(c *cli.Context, port uint16) error {
 
 	logger.L.Info("idbro server started.", zap.Uint16("port", port))
 
-	// Wait for interrupt signal to gracefully shutdown the server with
-	// a timeout of 10 seconds.
+	// Wait for interrupt signal to gracefully shutdown the server.
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
 
 	// set a timeout for graceful shutdown
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), graceTimeout)
 	defer cancel()
 
 	// gracefully shutdown
