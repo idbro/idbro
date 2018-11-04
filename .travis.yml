@@ -8,4 +8,12 @@ env:
   global:
     - GO111MODULE=on
 
-script: go test -v ./...
+install:
+  - go get golang.org/x/tools/cmd/cover
+  - go get github.com/mattn/goveralls
+
+script: 
+  - go test -race -v ./...
+
+after_success:
+  - goveralls -service=travis-ci
