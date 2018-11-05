@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/idbro/idbro/server/middleware"
+	"github.com/idbro/idbro/server/status"
 	"github.com/labstack/echo"
 )
 
@@ -19,4 +20,7 @@ func routing(e *echo.Echo) {
 	v1R.Match([]string{http.MethodGet, http.MethodHead}, "/ping", func(c echo.Context) error {
 		return c.String(http.StatusOK, "")
 	})
+
+	// status endpoint
+	v1R.GET("/status", status.Status)
 }
