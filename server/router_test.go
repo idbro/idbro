@@ -45,6 +45,9 @@ func TestRouting(t *testing.T) {
 		{method: http.MethodGet, path: "/v2/ping", expectResult: isNotFoundResult},
 		{method: http.MethodPost, path: "/v1/ping", expectResult: isNotAllowedResult},
 		{method: http.MethodPut, path: "/v1/ping", expectResult: isNotAllowedResult},
+
+		{method: http.MethodGet, path: "/v1/status", expectResult: ableToFindResult},
+		{method: http.MethodPost, path: "/v1/status", expectResult: isNotAllowedResult},
 	}
 
 	for _, one := range pathes {
