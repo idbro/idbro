@@ -4,7 +4,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/idbro/idbro/logger"
 	"github.com/labstack/echo"
 	"go.uber.org/zap"
 )
@@ -14,8 +13,8 @@ const (
 	LoggerField = "logger"
 )
 
-// Logger middleware
-func Logger() echo.MiddlewareFunc {
+// Logger middleware to generate a sub logger for each request and log information after every request.
+func Logger(logger *zap.Logger) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) (err error) {
 			req := c.Request()
@@ -25,7 +24,7 @@ func Logger() echo.MiddlewareFunc {
 			requestID := c.Get(IDBroRequstIDField).(string)
 
 			// create a new sub-logger
-			l := logger.L.With(zap.String(IDBroRequstIDField, requestID))
+			l := logger.With(zap.String(IDBroRequstIDField, requestID))
 			// set into context
 			c.Set(LoggerField, l)
 

@@ -6,13 +6,14 @@ import (
 	"github.com/idbro/idbro/server/middleware"
 	"github.com/idbro/idbro/server/status"
 	"github.com/labstack/echo"
+	"go.uber.org/zap"
 )
 
-// routing the requests
-func routing(e *echo.Echo) {
+// addRouting to echo
+func addRouting(e *echo.Echo, l *zap.Logger) {
 	// Middleware
 	e.Use(middleware.RequestID())
-	e.Use(middleware.Logger())
+	e.Use(middleware.Logger(l))
 
 	v1R := e.Group("/v1")
 
