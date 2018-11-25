@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/idbro/idbro/logger"
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
 )
@@ -29,12 +30,15 @@ func notAllowedInTest(c echo.Context) error {
 	return nil
 }
 
-func TestRouting(t *testing.T) {
+func TestAddRouting(t *testing.T) {
 	echo.NotFoundHandler = notFoundInTest
 	echo.MethodNotAllowedHandler = notAllowedInTest
 
+	testL, err := logger.New("test")
+	assert.NoError(t, err, "should no have error when creating logger")
+
 	e := echo.New()
-	routing(e)
+	addRouting(e, testL)
 	r := e.Router()
 
 	pathes := []routerFindResult{
