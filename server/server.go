@@ -8,9 +8,22 @@ import (
 	"time"
 
 	"github.com/idbro/idbro/logger"
+	"github.com/idbro/idbro/storage"
 	"github.com/labstack/echo"
 	"go.uber.org/zap"
 	"gopkg.in/urfave/cli.v1"
+)
+
+type (
+	// App contains the information of the service
+	App struct {
+		// the echo server
+		e *echo.Echo
+		// the logger to use
+		logger *zap.Logger
+		// the storage layer used
+		storage storage.Storage
+	}
 )
 
 const (
@@ -20,23 +33,41 @@ const (
 
 // Start the idbro server.
 func Start(c *cli.Context, port uint16) error {
+	l, err := logger.New("server")
+	if err != nil {
+		return err
+	}
+
+	var app App
+	app.e = createServer(l)
+	app.logger = l
+
+	return app.start(port)
+}
+
+// Create the echo server
+func createServer(l *zap.Logger) *echo.Echo {
 	e := echo.New()
 
 	// disable the Echo welcome print
 	e.HideBanner = true
-
 	// add routers
-	routing(e)
+	addRouting(e, l)
 
+	return e
+}
+
+// Start the echo server
+func (app *App) start(port uint16) error {
 	go func() {
 		// Start server
 		port := fmt.Sprintf(":%d", port)
-		if err := e.Start(port); err != nil {
-			logger.L.Fatal("Error start idbro server.", zap.Error(err))
+		if err := app.e.Start(port); err != nil {
+			app.logger.Fatal("Error start idbro server.", zap.Error(err))
 		}
 	}()
 
-	logger.L.Info("idbro server started.", zap.Uint16("port", port))
+	app.logger.Info("idbro server started.", zap.Uint16("port", port))
 
 	// Wait for interrupt signal to gracefully shutdown the server.
 	quit := make(chan os.Signal)
@@ -48,21 +79,22 @@ func Start(c *cli.Context, port uint16) error {
 	defer cancel()
 
 	// gracefully shutdown
-	if err := e.Shutdown(ctx); err != nil {
+	if err := app.e.Shutdown(ctx); err != nil {
 		return err
 	}
-	logger.L.Info("idbro server successfully shutdown.")
+	app.logger.Info("idbro server successfully shutdown.")
 
 	// cleanup other resources
-	if err := cleanup(); err != nil {
+	if err := app.cleanup(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func cleanup() error {
-	logger.L.Info("idbro server cleaning up...")
+// Cleanup the app
+func (app *App) cleanup() error {
+	app.logger.Info("idbro server cleaning up...")
 
 	return nil
 }
